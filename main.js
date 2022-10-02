@@ -22,6 +22,11 @@ class mesh {
     triCount() {
         return this.tris.length;
     }
+    purge() {
+        for (let i = 0; i < this.tris.length; i++) {
+            this.tris.pop();
+        }
+    }
 }
 
 class mat4x4 {
@@ -37,35 +42,35 @@ const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
 // The 3D Object
-var cubePoints = [
-    new vec3d(0, 0, 0), // 0 back-buttom-left
-    new vec3d(0, 0, 1), // 1 front-bottom-left
-    new vec3d(0, 1, 0), // 2 back-top-left
-    new vec3d(0, 1, 1), // 3 front-top-left
-    new vec3d(1, 0, 0), // 4 back-bottom-right
-    new vec3d(1, 0, 1), // 5 front-bottom-right
-    new vec3d(1, 1, 0), // 6 back-top-right
-    new vec3d(1, 1, 1)  // 7 front-top-right
+var meshPoints = [
+    new vec3d(0.0, 0.0, 0.0), // 0 back-buttom-left
+    new vec3d(0.0, 0.0, 1.0), // 1 front-bottom-left
+    new vec3d(0.0, 1.0, 0.0), // 2 back-top-left
+    new vec3d(0.0, 1.0, 1.0), // 3 front-top-left
+    new vec3d(1.0, 0.0, 0.0), // 4 back-bottom-right
+    new vec3d(1.0, 0.0, 1.0), // 5 front-bottom-right
+    new vec3d(1.0, 1.0, 0.0), // 6 back-top-right
+    new vec3d(1.0, 1.0, 1.0)  // 7 front-top-right
 ];
-var cubeMesh = new mesh(
+var currentMesh = new mesh(
     // Back
-    new triangle(cubePoints[0], cubePoints[2], cubePoints[6]),
-    new triangle(cubePoints[0], cubePoints[6], cubePoints[4]),
+    new triangle(meshPoints[0], meshPoints[2], meshPoints[6]),
+    new triangle(meshPoints[0], meshPoints[6], meshPoints[4]),
     // Top
-    new triangle(cubePoints[2], cubePoints[3], cubePoints[7]),
-    new triangle(cubePoints[2], cubePoints[7], cubePoints[6]),
+    new triangle(meshPoints[2], meshPoints[3], meshPoints[7]),
+    new triangle(meshPoints[2], meshPoints[7], meshPoints[6]),
     // Front
-    new triangle(cubePoints[5], cubePoints[7], cubePoints[3]),
-    new triangle(cubePoints[5], cubePoints[3], cubePoints[1]),
+    new triangle(meshPoints[5], meshPoints[7], meshPoints[3]),
+    new triangle(meshPoints[5], meshPoints[3], meshPoints[1]),
     // Bottom
-    new triangle(cubePoints[1], cubePoints[0], cubePoints[4]),
-    new triangle(cubePoints[1], cubePoints[4], cubePoints[5]),
+    new triangle(meshPoints[1], meshPoints[0], meshPoints[4]),
+    new triangle(meshPoints[1], meshPoints[4], meshPoints[5]),
     // Left
-    new triangle(cubePoints[1], cubePoints[3], cubePoints[2]),
-    new triangle(cubePoints[1], cubePoints[2], cubePoints[0]),
+    new triangle(meshPoints[1], meshPoints[3], meshPoints[2]),
+    new triangle(meshPoints[1], meshPoints[2], meshPoints[0]),
     // Right
-    new triangle(cubePoints[4], cubePoints[6], cubePoints[7]),
-    new triangle(cubePoints[4], cubePoints[7], cubePoints[5]),
+    new triangle(meshPoints[4], meshPoints[6], meshPoints[7]),
+    new triangle(meshPoints[4], meshPoints[7], meshPoints[5]),
 );
 
 
@@ -77,10 +82,7 @@ var fFovRad = 1 / Math.tan(fFov * 0.5 / 180 * Math.PI);
 // TODO Add to window resize event
 var fAspectRatio;
 
-// Timing variables
-var pastTime = new Date().getMilliseconds() / 1000000;
-var nowTime = 0;
-var deltaTime = 0;
+// Timing variable
 var totalTime = 0;
 
 // Matrices
@@ -168,7 +170,8 @@ function Init() {
 }
 
 function OnUserCreate() {
-    document.querySelector('title').text = "Cube!!!";
+    document.querySelector('title').text = "3D Render Engine";
+    pastTime = new Date().getMilliseconds();
     fNear = 0.1;
     fFar = 1000;
     fFov = 90.0;
@@ -185,15 +188,9 @@ function OnUserCreate() {
 let cameraPos = new vec3d;
 
 function OnUserUpdate() {
-    
-    // Handling resize events
-    window.addEventListener('resize', Init);
 
     // Updateing time
-    nowTime = new Date().getMilliseconds() / 1000000;
-    deltaTime = pastTime - nowTime;
-    pastTime = nowTime;
-    totalTime += 35 * (pastTime); // Speeding the rotation up by some value
+    totalTime = new Date().getTime() / 1000;
 
     matRotZ.m[0][0] = Math.cos(totalTime);
     matRotZ.m[0][1] = Math.sin(totalTime);
@@ -212,16 +209,16 @@ function OnUserUpdate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Line thickness of mesh
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 0;
     // Coloring of the mesh
     ctx.strokeStyle = 'black';
 
-    for (let i = 0; i < cubeMesh.triCount(); i++) {
+    for (let i = 0; i < currentMesh.triCount(); i++) {
         let triProjected = new triangle, triTranslated = new triangle, triRotatedZ = new triangle, triRotatedZX = new triangle;
         // Rotating in the z-axis
-        triRotatedZ.p[0] = mulVec3ByMat4(cubeMesh.tris[i].p[0], matRotZ);
-        triRotatedZ.p[1] = mulVec3ByMat4(cubeMesh.tris[i].p[1], matRotZ);
-        triRotatedZ.p[2] = mulVec3ByMat4(cubeMesh.tris[i].p[2], matRotZ);
+        triRotatedZ.p[0] = mulVec3ByMat4(currentMesh.tris[i].p[0], matRotZ);
+        triRotatedZ.p[1] = mulVec3ByMat4(currentMesh.tris[i].p[1], matRotZ);
+        triRotatedZ.p[2] = mulVec3ByMat4(currentMesh.tris[i].p[2], matRotZ);
 
         // Rotating in the x-axis
         triRotatedZX.p[0] = mulVec3ByMat4(triRotatedZ.p[0], matRotX);
@@ -244,7 +241,11 @@ function OnUserUpdate() {
             // Lighting code
             let lightDir = normalized(new vec3d(0, 0, -1));
             let lightAmt = dotProduct(cross, lightDir);
-            ctx.fillStyle = 'rgb(' + (255 * lightAmt) + ', '+ (255 * lightAmt) + ', '+ (255 * lightAmt) + ')';
+            
+            // Coloring based on light amount
+            ctx.fillStyle = 'rgb(' + (127 * lightAmt) + ', '+ (127 * lightAmt) + ', '+ (255 * lightAmt) + ')';
+            ctx.strokeStyle = 'rgb(' + (255 * lightAmt) + ', '+ (127 * lightAmt) + ', '+ (255 * lightAmt) + ')';
+            
             triProjected.p[0] = mulVec3ByMat4(triTranslated.p[0], matProj);
             triProjected.p[1] = mulVec3ByMat4(triTranslated.p[1], matProj);
             triProjected.p[2] = mulVec3ByMat4(triTranslated.p[2], matProj);
@@ -261,12 +262,11 @@ function OnUserUpdate() {
             triProjected.p[2].x *= 0.5 * canvas.width;
             triProjected.p[2].y *= 0.5 * canvas.height;
             
+            drawLines(triProjected);
             drawTriangle(triProjected);
         }
     }
-
     requestAnimationFrame(OnUserUpdate);
-    
 }
 // Starting function
 function Start() {
@@ -277,6 +277,5 @@ function Start() {
 
 // Starting the rendering
 Start();
-
-// I don't know why the rotation is freezing intermitently 
-// (Probably something to do with the sin & cos functions for the rotation matrices)
+// Handling resize events
+window.addEventListener('resize', Init);
