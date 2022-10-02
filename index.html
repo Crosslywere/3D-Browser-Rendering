@@ -20,11 +20,12 @@
     </style>
 </head>
 <body>
-    <form action="\">
-        <input type="file" name="3d-model" id="3d-model" required>
-        <input type="submit" value="Go!">
+    <form method="post">
+        <label for="model">
+            <input type="file" name="model" id="model" accept=".obj" required>
+            <canvas></canvas>
+        </label>
     </form>
-    <canvas></canvas>
     <script src="main.js"></script>
 </body>
 </html>
