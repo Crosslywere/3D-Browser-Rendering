@@ -11,6 +11,7 @@ The `ctx` variable is used to draw to the screen using methods like `stroke()` &
 **_Extra notes_**
 - Implemented [Part 1](https://youtu.be/ih20l3pJoeU) of the series.
 - Implemented reading new *obj* file, but it doesn't work too well.
+- Implemented the [Painter's algorithm](https://en.wikipedia.org/wiki/Painter%27s_algorithm) to fix mesh rendering.
 
 **_Problems_**
 1. Reading in files need to use 2 files the original file to load and any other to force the initial file to be loaded/
