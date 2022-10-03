@@ -159,6 +159,19 @@ function drawTriangle(t) {
     ctx.fill();
 }
 
+function sort(arr, test = (l, r)=>{ if (l > r) { return true; } return false;}) {
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < (arr.length - i - 1); j++) {
+            if (test(arr[j], arr[j + 1])) {
+                let temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+    return arr;
+}
+
 // Main functions
 function Init() {
     canvas.width = window.innerWidth;
@@ -213,6 +226,7 @@ function OnUserUpdate() {
     // Coloring of the mesh
     ctx.strokeStyle = 'black';
 
+    let trisToDraw = [];
     for (let i = 0; i < currentMesh.triCount(); i++) {
         let triProjected = new triangle, triTranslated = new triangle, triRotatedZ = new triangle, triRotatedZX = new triangle;
         // Rotating in the z-axis
@@ -235,17 +249,9 @@ function OnUserUpdate() {
         line1 = subVectors(triTranslated.p[1], triTranslated.p[0]);
         line2 = subVectors(triTranslated.p[2], triTranslated.p[0]);
         cross = crossProduct(line1, line2);
-        // if (normal.z > 0) {
         let dot = dotProduct(cross, subVectors(triTranslated.p[0], cameraPos));
         if (dot < 0) {
-            // Lighting code
-            let lightDir = normalized(new vec3d(0, 0, -1));
-            let lightAmt = dotProduct(cross, lightDir);
-            
-            // Coloring based on light amount
-            ctx.fillStyle = 'rgb(' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ')';
-            // ctx.strokeStyle = 'rgb(' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ')';
-            
+            // Projecting to 2D space
             triProjected.p[0] = mulVec3ByMat4(triTranslated.p[0], matProj);
             triProjected.p[1] = mulVec3ByMat4(triTranslated.p[1], matProj);
             triProjected.p[2] = mulVec3ByMat4(triTranslated.p[2], matProj);
@@ -262,10 +268,32 @@ function OnUserUpdate() {
             triProjected.p[2].x *= 0.5 * canvas.width;
             triProjected.p[2].y *= 0.5 * canvas.height;
             
-            drawLines(triProjected);
-            drawTriangle(triProjected);
+            trisToDraw.push(triProjected);
         }
     }
+    
+    // Sorting(Painter's algorithm) the triangles to be drawn
+    trisToDraw = sort(trisToDraw, (l, r)=>{
+        let z1 = (l.p[0].z + l.p[1].z + l.p[2].z) / 3;
+        let z2 = (r.p[0].z + r.p[1].z + r.p[2].z) / 3;
+        return z1 < z2;
+    });
+
+    // Rasterising triangles to be drawn
+    for (let i = 0; i < trisToDraw.length; i++) {
+        // Coloring based on light amount
+        let cross = new vec3d, line1 = new vec3d, line2 = new vec3d;
+        line1 = subVectors(trisToDraw[i].p[1], trisToDraw[i].p[0]);
+        line2 = subVectors(trisToDraw[i].p[2], trisToDraw[i].p[0]);
+        cross = crossProduct(line1, line2);
+        let lightDir = normalized(new vec3d(0, 0, -1));
+        let lightAmt = dotProduct(cross, lightDir);
+        ctx.fillStyle = 'rgb(' + ((255 * lightAmt)) + ', ' + ((255 * lightAmt)) + ', ' + ((255 * lightAmt)) + ')';
+
+        drawLines(trisToDraw[i]);
+        drawTriangle(trisToDraw[i]);
+    }
+
     requestAnimationFrame(OnUserUpdate);
 }
 // Starting function
