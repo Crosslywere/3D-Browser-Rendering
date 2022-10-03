@@ -198,7 +198,7 @@ function OnUserCreate() {
 }
 
 // Camera I dont think this will be permanent
-let cameraPos = new vec3d(0);
+let cameraPos = new vec3d(0), translateZ = 8;
 
 function OnUserUpdate() {
 
@@ -240,9 +240,9 @@ function OnUserUpdate() {
         triRotatedZX.p[2] = mulVec3ByMat4(triRotatedZ.p[2], matRotX);
 
         triTranslated = triRotatedZX;
-        triTranslated.p[0].z = triRotatedZX.p[0].z + 8.0;
-        triTranslated.p[1].z = triRotatedZX.p[1].z + 8.0;
-        triTranslated.p[2].z = triRotatedZX.p[2].z + 8.0;
+        triTranslated.p[0].z = triRotatedZX.p[0].z + translateZ;
+        triTranslated.p[1].z = triRotatedZX.p[1].z + translateZ;
+        triTranslated.p[2].z = triRotatedZX.p[2].z + translateZ;
 
         // TODO Remove unseen faces
         let cross = new vec3d, line1 = new vec3d, line2 = new vec3d;
@@ -353,3 +353,8 @@ function loadAssets() {
     }
 }
 
+// Temporary zoom code
+window.addEventListener('keydown', (ev)=>{
+    if (ev.key == '-') { translateZ++; }
+    if (ev.key == '=' || ev.key == '+') { translateZ--; }
+});
