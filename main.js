@@ -23,9 +23,7 @@ class mesh {
         return this.tris.length;
     }
     purge() {
-        for (let i = 0; i < this.tris.length; i++) {
-            this.tris.pop();
-        }
+        this.tris = new Array();
     }
 }
 
@@ -324,7 +322,7 @@ function readFiles(files) {
 
 function readObj(file) {
     objReader.onload = (ev)=>{
-        meshPoints = [];
+        meshPoints = new Array();
         objData = objReader.result.split('\n');
         // console.log(objData);
         faceCount = 0;
@@ -340,9 +338,9 @@ function readObj(file) {
                 meshFaces.push(new triangle(meshPoints[Number(f[0]) - 1], meshPoints[Number(f[1]) - 1], meshPoints[Number(f[2]) - 1]));
             }
         }
+        loadAssets();
     }
     objReader.readAsBinaryString(file);
-    loadAssets();
 }
 
 function loadAssets() {
