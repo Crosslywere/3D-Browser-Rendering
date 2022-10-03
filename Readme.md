@@ -10,4 +10,8 @@ The `ctx` variable is used to draw to the screen using methods like `stroke()` &
 
 **_Extra notes_**
 - Implemented [Part 1](https://youtu.be/ih20l3pJoeU) of the series.
-- Working on file input using `<input type="file">`...
+- Implemented reading new *obj* file, but it doesn't work too well.
+
+**_Problems_**
+1. Reading in files need to use 2 files the original file to load and any other to force the initial file to be loaded/
+2. Trying to load in more than 2 files as described above will cause all meshes to merge except for the last obj file specified.
