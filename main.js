@@ -1,8 +1,9 @@
 class vec3d {
-    constructor(x = 0, y = x, z = 0) {
+    constructor(x = 0, y = x, z = 0, w = 0) {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.w = w;
     }
 }
 
@@ -76,7 +77,6 @@ var currentMesh = new mesh(
 var fNear;
 var fFar;
 var fFov;
-var fFovRad = 1 / Math.tan(fFov * 0.5 / 180 * Math.PI);
 // TODO Add to window resize event
 var fAspectRatio;
 
@@ -84,7 +84,7 @@ var fAspectRatio;
 var totalTime = 0;
 
 // Matrices
-var matRotZ = new mat4x4, matRotX = new mat4x4, matProj = new mat4x4;
+var matProj = new mat4x4;
 
 // Utility functions
 function magnitude(v) {
@@ -106,6 +106,14 @@ function subVectors(v1, v2) {
     return new vec3d(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 }
 
+function mulVector(v, s) {
+    return new vec3d(v.x * s, v.y * s, v.z * s);
+}
+
+function divVector(v, s) {
+    return new vec3d(v.x / s, v.y / s, v.z / s);
+}
+
 function dotProduct(v1, v2) {
     let nv1 = normalized(v1);
     let nv2 = normalized(v2);
@@ -120,6 +128,88 @@ function crossProduct(v1, v2) {
 
     result = normalized(result);
 
+    return result;
+}
+
+function matrixMulVector(v, m) {
+    let result = new vec3d;
+    result.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + v.w * m.m[3][0];
+    result.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + v.w * m.m[3][1];
+    result.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + v.w * m.m[3][2];
+    result.w = v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + v.w * m.m[3][3];
+    return result;
+}
+
+function matrixIdentity() {
+    let result = new mat4x4;
+    result.m[0][0] = 1;
+    result.m[1][1] = 1;
+    result.m[2][2] = 1;
+    result.m[3][3] = 1;
+    return result;
+}
+
+function matrixMakeRotationX(radAngle) {
+    let result = new mat4x4;
+    result.m[0][0] = 1;
+    result.m[1][1] = Math.cos(radAngle * 0.5);
+    result.m[1][2] = Math.sin(radAngle * 0.5);
+    result.m[2][1] = -(Math.sin(radAngle * 0.5));
+    result.m[2][2] = Math.cos(radAngle * 0.5);
+    result.m[3][3] = 1;
+    return result;
+}
+
+function matrixMakeRotationY(radAngle) {
+    let result = new mat4x4;
+    result.m[0][0] = Math.cos(radAngle);
+    result.m[0][2] = Math.sin(radAngle);
+    result.m[2][0] = -(Math.sin(radAngle));
+    result.m[1][1] = 1;
+    result.m[2][2] = Math.cos(radAngle);
+    result.m[3][3] = 1;
+    return result;
+}
+
+function matrixMakeRotationZ(radAngle) {
+    let result = new mat4x4;
+    result.m[0][0] = Math.cos(radAngle);
+    result.m[0][1] = Math.sin(radAngle);
+    result.m[1][0] = -(Math.sin(radAngle));
+    result.m[1][1] = Math.cos(radAngle);
+    result.m[2][2] = 1;
+    result.m[3][3] = 1;
+    return result;
+}
+
+function matrixMakeTranslation(x, y, z) {
+    let result = matrixIdentity();
+    result.m[3][0] = x;
+    result.m[3][1] = y;
+    result.m[3][2] = z;
+    return result;
+}
+
+function matrixMakeProjection(fovDeg, aspectRatio, nearDist, farDist) {
+    let fov = 1 / Math.tan(fovDeg * 0.5 / 180 * Math.PI);
+    let result = new mat4x4;
+    result.m[0][0] = aspectRatio * fov;
+    result.m[1][1] = fov;
+    result.m[2][2] = farDist / (farDist - nearDist);
+    result.m[2][3] = 1;
+    result.m[3][2] = (-farDist * nearDist) / (farDist - nearDist);
+    result.m[3][3] = 0;
+    return result;
+}
+
+function matrixMulMatrix(m1, m2) {
+    let result = new mat4x4;
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            result.m[j][i] = m1.m[j][0] * m2.m[0][i] + m1.m[j][1] * m2.m[1][i] +
+                             m1.m[j][2] * m2.m[2][i] + m1.m[j][3] * m2.m[3][i];
+        }
+    }
     return result;
 }
 
@@ -138,7 +228,20 @@ function mulVec3ByMat4(v, m) {
     return result;
 }
 
+function sort(arr, test = (l, r)=>{ if (l > r) { return true; } return false;}) {
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < (arr.length - i - 1); j++) {
+            if (test(arr[j], arr[j + 1])) {
+                let temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+    return arr;
+}
 
+// Drawing functions
 function drawLines(t) {
     ctx.beginPath();
     ctx.moveTo(t.p[0].x, t.p[0].y);
@@ -157,27 +260,13 @@ function drawTriangle(t) {
     ctx.fill();
 }
 
-function sort(arr, test = (l, r)=>{ if (l > r) { return true; } return false;}) {
-    for (let i = 0; i < arr.length; i++) {
-        for (let j = 0; j < (arr.length - i - 1); j++) {
-            if (test(arr[j], arr[j + 1])) {
-                let temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-            }
-        }
-    }
-    return arr;
-}
-
 // Main functions
 function Init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     fAspectRatio = canvas.height / canvas.width;
-
-    matProj.m[0][0] = fAspectRatio * fFovRad;
+    matProj = matrixMakeProjection(fFov, fAspectRatio, fNear, fFar);
 }
 
 function OnUserCreate() {
@@ -186,13 +275,7 @@ function OnUserCreate() {
     fNear = 0.1;
     fFar = 1000;
     fFov = 90.0;
-    fFovRad = 1 / Math.tan(fFov * 0.5 / 180 * Math.PI);
-    matProj.m[0][0] = fAspectRatio * fFovRad;
-    matProj.m[1][1] = fFovRad;
-    matProj.m[2][2] = fFar / (fFar - fNear);
-    matProj.m[3][2] = (-fFar * fNear) / (fFar - fNear);
-    matProj.m[2][3] = 1.0;
-    matProj.m[3][3] = 0.0;
+    matProj = matrixMakeProjection(fFov, fAspectRatio, fNear, fFar);
 }
 
 // Camera I dont think this will be permanent
@@ -203,19 +286,13 @@ function OnUserUpdate() {
     // Updateing time
     totalTime = new Date().getTime() / 1000;
 
-    matRotZ.m[0][0] = Math.cos(totalTime);
-    matRotZ.m[0][1] = Math.sin(totalTime);
-    matRotZ.m[1][0] = -(Math.sin(totalTime));
-    matRotZ.m[1][1] = Math.cos(totalTime);
-    matRotZ.m[2][2] = 1;
-    matRotZ.m[3][3] = 1;
+    let matRotZ = matrixMakeRotationZ(totalTime);
+    let matRotX = matrixMakeRotationX(totalTime);
 
-    matRotX.m[0][0] = 1;
-    matRotX.m[1][1] = Math.cos(totalTime * 0.5);
-    matRotX.m[1][2] = Math.sin(totalTime * 0.5);
-    matRotX.m[2][1] = -(Math.sin(totalTime * 0.5));
-    matRotX.m[2][2] = Math.cos(totalTime * 0.5);
-    matRotX.m[3][3] = 1;
+    // New matrices 
+    let matTrans = matrixMakeTranslation(0, 0, 16);
+    let matWorld = matrixMulMatrix(matRotZ, matRotX);
+    matWorld = matrixMulMatrix(matWorld, matTrans);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -317,7 +394,6 @@ function readFiles(files) {
             readObj(files.item(i));
         }
     }
-    loadAssets();
 }
 
 function readObj(file) {
