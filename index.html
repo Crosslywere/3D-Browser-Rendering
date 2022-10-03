@@ -15,14 +15,14 @@
             top: 0; left: 0;
             width: 100%;
             height: 100%;
-            background-color: skyblue;
+            background-color: black;
         }
     </style>
 </head>
 <body>
     <form method="post">
         <label for="model">
-            <input type="file" name="model" id="model" accept=".obj" required>
+            <input type="file" name="model" id="model" accept=".obj" onchange="readObj(this.files[0])" multiple>
             <canvas></canvas>
         </label>
     </form>

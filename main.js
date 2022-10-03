@@ -185,7 +185,7 @@ function OnUserCreate() {
 }
 
 // Camera I dont think this will be permanent
-let cameraPos = new vec3d;
+let cameraPos = new vec3d(0);
 
 function OnUserUpdate() {
 
@@ -226,9 +226,9 @@ function OnUserUpdate() {
         triRotatedZX.p[2] = mulVec3ByMat4(triRotatedZ.p[2], matRotX);
 
         triTranslated = triRotatedZX;
-        triTranslated.p[0].z = triRotatedZX.p[0].z + 3.0;
-        triTranslated.p[1].z = triRotatedZX.p[1].z + 3.0;
-        triTranslated.p[2].z = triRotatedZX.p[2].z + 3.0;
+        triTranslated.p[0].z = triRotatedZX.p[0].z + 8.0;
+        triTranslated.p[1].z = triRotatedZX.p[1].z + 8.0;
+        triTranslated.p[2].z = triRotatedZX.p[2].z + 8.0;
 
         // TODO Remove unseen faces
         let cross = new vec3d, line1 = new vec3d, line2 = new vec3d;
@@ -243,8 +243,8 @@ function OnUserUpdate() {
             let lightAmt = dotProduct(cross, lightDir);
             
             // Coloring based on light amount
-            ctx.fillStyle = 'rgb(' + (127 * lightAmt) + ', '+ (127 * lightAmt) + ', '+ (255 * lightAmt) + ')';
-            ctx.strokeStyle = 'rgb(' + (255 * lightAmt) + ', '+ (127 * lightAmt) + ', '+ (255 * lightAmt) + ')';
+            ctx.fillStyle = 'rgb(' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ')';
+            // ctx.strokeStyle = 'rgb(' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ')';
             
             triProjected.p[0] = mulVec3ByMat4(triTranslated.p[0], matProj);
             triProjected.p[1] = mulVec3ByMat4(triTranslated.p[1], matProj);
@@ -279,3 +279,49 @@ function Start() {
 Start();
 // Handling resize events
 window.addEventListener('resize', Init);
+
+// File Handling Code
+var objReader = new FileReader(), objData = [], meshFaces = [], faceCount;
+
+function readFiles(files) {
+    for (let i = 0; i < files.length; i++) {
+        console.log('File "' + files.item(i).name + '" being processed...');
+        let type = files.item(i).name.slice(-3);
+        if (type == 'obj') {
+            readObj(files.item(i));
+        }
+    }
+    loadAssets();
+}
+
+function readObj(file) {
+    objReader.onload = (ev)=>{
+        meshPoints = [];
+        objData = objReader.result.split('\n');
+        // console.log(objData);
+        faceCount = 0;
+        for(let i = 0; i < objData.length; i++) {
+            if (objData[i].charAt(0) == 'v') {
+                let vecStr = objData[i].slice(1).trim().split(' ');
+                // console.log(vecStr);
+                meshPoints.push(new vec3d(Number(vecStr[0]), Number(vecStr[1]), Number(vecStr[2])));
+            }
+            if (objData[i].charAt(0) == 'f') {
+                let f = objData[i].slice(1).trim().split(' ');
+                faceCount++;
+                meshFaces.push(new triangle(meshPoints[Number(f[0]) - 1], meshPoints[Number(f[1]) - 1], meshPoints[Number(f[2]) - 1]));
+            }
+        }
+    }
+    objReader.readAsBinaryString(file);
+    loadAssets();
+}
+
+function loadAssets() {
+    currentMesh.purge();
+    for (let i = 0; i < faceCount; i++) {
+        console.log(meshFaces[i]);
+        currentMesh.tris.push(meshFaces[i]);
+    }
+}
+
