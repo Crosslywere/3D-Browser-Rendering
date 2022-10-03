@@ -4,6 +4,7 @@ The project is based of off the [3D Graphics Engine](https://youtu.be/ih20l3pJoe
 
 The project uses HTML5's 2d [`<canvas>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas) context in the same way [olPixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine) created by [OneLoneCoder](https://github.com/OneLoneCoder) is used.
 > **`const`**` canvas = document.querySelector('canvas');`
+
 > **`const`**` ctx = canvas.getContext('2d');`
 
 The `ctx` variable is used to draw to the screen using methods like `stroke()` & `fill()` to draw lines and faces respectively
@@ -14,6 +15,5 @@ The `ctx` variable is used to draw to the screen using methods like `stroke()` &
 - Implemented the [Painter's algorithm](https://en.wikipedia.org/wiki/Painter%27s_algorithm) to fix mesh rendering.
 
 **_Problems_**
-1. Reading in files need to use 2 files the original file to load and any other to force the initial file to be loaded.
-2. Trying to load in more than 2 files as described above will cause all meshes to merge except for the last obj file specified.
+1. Rendering broken after loading more than 1 file
 3. Rendering shadows is broken.
