@@ -398,7 +398,8 @@ function readFiles(files) {
 
 function readObj(file) {
     objReader.onload = (ev)=>{
-        meshPoints = new Array();
+        meshPoints = [];
+        meshFaces = [];
         objData = objReader.result.split('\n');
         // console.log(objData);
         faceCount = 0;
