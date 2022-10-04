@@ -16,4 +16,4 @@ The `ctx` variable is used to draw to the screen using methods like `stroke()` &
 - Currently on video 3 of 4 [here](https://youtu.be/HXSuNxpCzdM)
 
 **_Problems_**
-3. Rendering shadows is broken.
+1. Rendering shadows is broken.
