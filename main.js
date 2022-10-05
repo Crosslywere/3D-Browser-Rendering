@@ -326,24 +326,7 @@ function OnUserUpdate() {
         cross = crossProduct(line1, line2);
         let dot = dotProduct(cross, subVectors(triTranslated.p[0], cameraPos));
         if (dot < 0) {
-            // Projecting to 2D space
-            triProjected.p[0] = mulVec3ByMat4(triTranslated.p[0], matProj);
-            triProjected.p[1] = mulVec3ByMat4(triTranslated.p[1], matProj);
-            triProjected.p[2] = mulVec3ByMat4(triTranslated.p[2], matProj);
-
-            // Translating to center of viewport
-            triProjected.p[0].x += 1; triProjected.p[0].y += 1;
-            triProjected.p[1].x += 1; triProjected.p[1].y += 1;
-            triProjected.p[2].x += 1; triProjected.p[2].y += 1;
-            // Scale into view
-            triProjected.p[0].x *= 0.5 * canvas.width;
-            triProjected.p[0].y *= 0.5 * canvas.height;
-            triProjected.p[1].x *= 0.5 * canvas.width;
-            triProjected.p[1].y *= 0.5 * canvas.height;
-            triProjected.p[2].x *= 0.5 * canvas.width;
-            triProjected.p[2].y *= 0.5 * canvas.height;
-            
-            trisToDraw.push(triProjected);
+            trisToDraw.push(triTranslated);
         }
     }
     
@@ -363,7 +346,26 @@ function OnUserUpdate() {
         cross = crossProduct(line1, line2);
         let lightDir = normalized(new vec3d(0, 0, -1));
         let lightAmt = dotProduct(cross, lightDir);
-        ctx.fillStyle = 'rgb(' + ((255 * lightAmt)) + ', ' + ((255 * lightAmt)) + ', ' + ((255 * lightAmt)) + ')';
+
+        ctx.fillStyle = 'rgb(' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ')';
+        ctx.strokeStyle = 'rgb(' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ', ' + ((190 * lightAmt) + 65) + ')';
+
+        // Projecting to 2D space
+        trisToDraw[i].p[0] = mulVec3ByMat4(trisToDraw[i].p[0], matProj);
+        trisToDraw[i].p[1] = mulVec3ByMat4(trisToDraw[i].p[1], matProj);
+        trisToDraw[i].p[2] = mulVec3ByMat4(trisToDraw[i].p[2], matProj);
+
+        // Translating to center of viewport
+        trisToDraw[i].p[0].x += 1; trisToDraw[i].p[0].y += 1;
+        trisToDraw[i].p[1].x += 1; trisToDraw[i].p[1].y += 1;
+        trisToDraw[i].p[2].x += 1; trisToDraw[i].p[2].y += 1;
+        // Scale into view
+        trisToDraw[i].p[0].x *= 0.5 * canvas.width;
+        trisToDraw[i].p[0].y *= 0.5 * canvas.height;
+        trisToDraw[i].p[1].x *= 0.5 * canvas.width;
+        trisToDraw[i].p[1].y *= 0.5 * canvas.height;
+        trisToDraw[i].p[2].x *= 0.5 * canvas.width;
+        trisToDraw[i].p[2].y *= 0.5 * canvas.height;
 
         drawLines(trisToDraw[i]);
         drawTriangle(trisToDraw[i]);

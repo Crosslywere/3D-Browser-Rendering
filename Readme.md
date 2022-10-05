@@ -13,7 +13,7 @@ The `ctx` variable is used to draw to the screen using methods like `stroke()` &
 - Implemented [Part 1](https://youtu.be/ih20l3pJoeU) of the series.
 - Implemented reading new *obj* file, but it doesn't work too well.
 - Implemented the [Painter's algorithm](https://en.wikipedia.org/wiki/Painter%27s_algorithm) to fix mesh rendering.
-- Currently on video 3 of 4 [here](https://youtu.be/HXSuNxpCzdM)
+- Currently on [video 3 of 4](https://youtu.be/HXSuNxpCzdM)
 
 **_Problems_**
-1. Rendering shadows is broken.
+(None at the moment)
